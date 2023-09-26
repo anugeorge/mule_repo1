@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="119a11bc-b0b9-4857-9f03-47312afb7a75" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="b14ac59e-73ff-41ff-9264-ed993cca4ac5" >
+		<db:oracle-connection host="localhost" user="system" password="system" serviceName="xe" />
+	</db:config>
+	<flow name="getFlights" doc:id="6d27b604-fc2d-4080-aa49-00f32fff1788" >
+		<http:listener doc:name="Listener" doc:id="966df848-20a5-409e-b78a-3d73cb998944" config-ref="HTTP_Listener_config" path="/flights"/>
+		<db:select doc:id="8a7a0167-8158-4bed-bc9a-3d18e27b93b9" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from american_flights]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="ae32e100-c1eb-4944-877d-921715a4e568" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getFlightsByID" doc:id="87ac60ab-3dad-4228-8663-dec985ee2ed1" >
+		<http:listener doc:name="Listener" doc:id="a47b9702-697b-40e8-a80c-412b63b5c40d" config-ref="HTTP_Listener_config" path="/flights{ID}"/>
+		<db:select doc:name="Select" doc:id="64bfbcba-21fb-48f8-bfa4-85a08c56cffd" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from american_flights where id = :ID]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'ID' : attributes.uriParams.ID}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="0732d0b3-0e5a-4a39-ad7a-ccb4e4970027" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="postFlight" doc:id="5029bdd7-ef25-49e5-a807-972f284e2918" >
+		<http:listener doc:name="Listener" doc:id="479110c5-5dc2-4345-94f2-76565705d65d" config-ref="HTTP_Listener_config" path="/postflights"/>
+		<set-payload value='{"message": "Flight added (but not really)"}' doc:name="Set Payload" doc:id="468c33a4-d264-4ec6-8dd4-9c2b00366cab" />
+	</flow>
+	<flow name="implementationsFlow" doc:id="fb2b1f5b-c28a-4761-9c81-2b79f545a471" >
+		<http:listener doc:name="Listener" doc:id="2cf9bfe8-5c0a-46c7-87f8-1a07830e75da" config-ref="HTTP_Listener_config" path="/new"/>
+		<set-payload value="payload" doc:name="Set Payload" doc:id="f71ae59a-21d0-4c64-b31d-eaaf8dcea0bd" />
+	</flow>
+</mule>
