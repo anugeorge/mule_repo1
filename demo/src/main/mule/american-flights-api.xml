@@ -188,7 +188,8 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="post:\flights:application\json:american-flights-api-config">
-        <ee:transform doc:name="Transform Message">
+        <set-payload value="new update" doc:name="Set Payload" doc:id="44a5beb0-e9a4-45a0-b0ad-38eb9159de0e" />
+		<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
